@@ -12,7 +12,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", icon: Home, label: t('home') },
     { href: "/categories", icon: Grid, label: t('categories') },
     { href: "/cart", icon: ShoppingCart, label: t('cart'), badge: cartItemsCount > 0 ? cartItemsCount : undefined },
-    { href: "/admin", icon: ShieldCheck, label: t('admin') },
     { href: "/settings", icon: Settings, label: t('settings') },
   ];
 
