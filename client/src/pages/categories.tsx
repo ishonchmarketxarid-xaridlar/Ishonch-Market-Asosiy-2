@@ -78,14 +78,28 @@ export default function Categories() {
 
   return (
     <Layout>
-      <div className="p-4 space-y-6 animate-in fade-in duration-500">
-        <div className="flex items-center justify-between gap-4">
+      <div className="p-4 md:p-0 space-y-8 animate-in fade-in duration-500">
+        
+        {/* Search Header - matching Home screen style */}
+        <div className="relative group max-w-2xl mx-auto">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          </div>
+          <Input 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('search_placeholder')}
+            className="pl-12 h-14 rounded-2xl bg-card border-border/50 shadow-sm shadow-black/5 text-lg focus-visible:ring-primary/20 transition-all"
+            data-testid="input-category-search"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedCategory && (
               <button 
                 onClick={() => {
                   setSelectedCategory(null);
-                  setSearchQuery("");
                 }}
                 className="p-2 hover:bg-secondary rounded-full transition-colors"
                 data-testid="button-back-to-categories"
@@ -93,14 +107,29 @@ export default function Categories() {
                 <ChevronLeft className="w-6 h-6" />
               </button>
             )}
-            <h1 className="text-2xl md:text-3xl font-black font-display text-primary">
+            <h2 className="text-xl font-bold font-display">
               {selectedCategory ? selectedCategory : t('categories')}
-            </h1>
+            </h2>
           </div>
           {selectedCategory && (
-            <span className="text-muted-foreground text-sm font-bold bg-secondary px-3 py-1 rounded-full whitespace-nowrap">
-              {filteredProducts.length} {t('products_count') || 'mahsulot'}
-            </span>
+            <div className="flex items-center gap-4">
+               <span className="hidden md:inline text-muted-foreground text-sm font-bold bg-secondary px-3 py-1 rounded-full whitespace-nowrap">
+                {filteredProducts.length} {t('products_count')}
+              </span>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <SelectTrigger className="w-[140px] md:w-[180px] h-10 rounded-xl bg-card border-border/50" data-testid="select-sort">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                    <SelectValue placeholder="Saralash" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="popular">Ommabop</SelectItem>
+                  <SelectItem value="price-asc">Arzonroq</SelectItem>
+                  <SelectItem value="price-desc">Qimmatroq</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
         </div>
         
@@ -117,55 +146,48 @@ export default function Categories() {
         ) : (
           <div className="space-y-6">
             {!selectedCategory ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {categories.map(category => {
                   const Icon = categoryIcons[category] || Grid;
+                  // Find a sample product image for the category
+                  const sampleProduct = products?.find(p => p.category === category);
                   return (
                     <Card 
                       key={category}
-                      className="p-6 rounded-[2rem] border-border/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer flex flex-col items-center gap-3 bg-card group"
+                      className="group relative aspect-square overflow-hidden rounded-[2rem] border-border/50 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer bg-card"
                       onClick={() => setSelectedCategory(category)}
                       data-testid={`card-category-${category}`}
                     >
-                      <div className="p-4 bg-secondary rounded-[1.5rem] text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                        <Icon className="w-8 h-8" />
+                      {sampleProduct?.imageUrl ? (
+                        <div className="absolute inset-0">
+                          <img 
+                            src={sampleProduct.imageUrl} 
+                            alt={category}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-40"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center">
+                           <Icon className="w-16 h-16 text-primary/20" />
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
+                        <div className="p-4 bg-white/10 backdrop-blur-md rounded-[1.5rem] text-white mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                          <Icon className="w-8 h-8" />
+                        </div>
+                        <span className="font-black text-xl text-white capitalize font-display drop-shadow-md">{category}</span>
+                        <span className="text-white/70 text-sm font-bold mt-1">
+                          {products?.filter(p => p.category === category).length} {t('products_count')}
+                        </span>
                       </div>
-                      <span className="font-bold text-center capitalize">{category}</span>
                     </Card>
                   );
                 })}
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Filters Row */}
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder={t('search_placeholder')}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 h-11 rounded-xl bg-card border-border/50 focus-visible:ring-primary/20"
-                      data-testid="input-category-search"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                      <SelectTrigger className="w-full md:w-[180px] h-11 rounded-xl bg-card border-border/50" data-testid="select-sort">
-                        <div className="flex items-center gap-2">
-                          <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-                          <SelectValue placeholder="Saralash" />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="popular">Ommabop</SelectItem>
-                        <SelectItem value="price-asc">Arzonroq</SelectItem>
-                        <SelectItem value="price-desc">Qimmatroq</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
                 {/* Products Grid */}
                 {filteredProducts.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -174,7 +196,7 @@ export default function Categories() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-20 text-muted-foreground bg-card rounded-[2rem] border border-dashed border-border/50">
+                  <div className="text-center py-20 text-muted-foreground bg-card rounded-[2xl] border border-dashed border-border/50">
                     Mahsulotlar topilmadi
                   </div>
                 )}
@@ -182,7 +204,7 @@ export default function Categories() {
             )}
 
             {categories.length === 0 && (
-               <div className="text-center py-20 text-muted-foreground bg-card rounded-[2rem] border border-dashed">
+               <div className="text-center py-20 text-muted-foreground bg-card rounded-[2xl] border border-dashed border-border/50">
                  Kategoriyalar topilmadi
                </div>
             )}
