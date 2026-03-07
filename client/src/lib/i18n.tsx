@@ -53,6 +53,7 @@ const translations: Record<Language, Dictionary> = {
     save: 'Saqlash',
     cancel: 'Bekor qilish',
     uzs: 'UZS',
+    products_count: 'mahsulot',
   },
   ru: {
     home: 'Главная',
@@ -100,6 +101,7 @@ const translations: Record<Language, Dictionary> = {
     save: 'Сохранить',
     cancel: 'Отмена',
     uzs: 'Сум',
+    products_count: 'товаров',
   },
 };
 

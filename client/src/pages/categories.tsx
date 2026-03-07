@@ -5,7 +5,24 @@ import { ProductCard } from "@/components/product-card";
 import { Layout } from "@/components/layout";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-import { Smartphone, Laptop, Home, ShoppingBag, Grid } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  Smartphone, 
+  Laptop, 
+  Home, 
+  ShoppingBag, 
+  Grid, 
+  Search, 
+  ArrowUpDown,
+  ChevronLeft
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const categoryIcons: Record<string, any> = {
   "Elektronika": Smartphone,
@@ -16,10 +33,14 @@ const categoryIcons: Record<string, any> = {
   "Maishiy texnika": Home,
 };
 
+type SortOption = "popular" | "price-asc" | "price-desc";
+
 export default function Categories() {
   const { data: products, isLoading } = useProducts();
-  const { t } = useLanguage();
+  const { t, getLocalized } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("popular");
 
   const categories = useMemo(() => {
     if (!products) return [];
@@ -29,36 +50,74 @@ export default function Categories() {
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
-    if (!selectedCategory) return products;
-    return products.filter(p => p.category === selectedCategory);
-  }, [products, selectedCategory]);
+    let result = products;
+    
+    if (selectedCategory) {
+      result = result.filter(p => p.category === selectedCategory);
+    }
+
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        getLocalized(p, 'title').toLowerCase().includes(lowerQuery) ||
+        p.category.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    // Sorting
+    return [...result].sort((a, b) => {
+      if (sortBy === "price-asc") return a.price - b.price;
+      if (sortBy === "price-desc") return b.price - a.price;
+      if (sortBy === "popular") {
+        if (a.isPopular && !b.isPopular) return -1;
+        if (!a.isPopular && b.isPopular) return 1;
+      }
+      return 0;
+    });
+  }, [products, selectedCategory, searchQuery, sortBy, getLocalized]);
 
   return (
     <Layout>
-      <div className="p-4 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-black font-display text-primary">{t('categories')}</h1>
+      <div className="p-4 space-y-6 animate-in fade-in duration-500">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {selectedCategory && (
+              <button 
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSearchQuery("");
+                }}
+                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                data-testid="button-back-to-categories"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+            <h1 className="text-2xl md:text-3xl font-black font-display text-primary">
+              {selectedCategory ? selectedCategory : t('categories')}
+            </h1>
+          </div>
           {selectedCategory && (
-            <button 
-              onClick={() => setSelectedCategory(null)}
-              className="text-sm font-bold text-primary bg-primary/10 px-4 py-2 rounded-xl"
-            >
-              Hammasi
-            </button>
+            <span className="text-muted-foreground text-sm font-bold bg-secondary px-3 py-1 rounded-full whitespace-nowrap">
+              {filteredProducts.length} {t('products_count') || 'mahsulot'}
+            </span>
           )}
         </div>
         
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-32 rounded-3xl w-full" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="flex flex-col space-y-3 bg-card p-4 rounded-2xl">
+                <Skeleton className="h-40 w-full rounded-xl" />
+                <Skeleton className="h-4 w-[80%]" />
+                <Skeleton className="h-4 w-[60%]" />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-10">
-            {/* Category Cards */}
-            {!selectedCategory && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="space-y-6">
+            {!selectedCategory ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {categories.map(category => {
                   const Icon = categoryIcons[category] || Grid;
                   return (
@@ -66,6 +125,7 @@ export default function Categories() {
                       key={category}
                       className="p-6 rounded-[2rem] border-border/50 shadow-sm hover:shadow-md hover:border-primary/30 transition-all cursor-pointer flex flex-col items-center gap-3 bg-card group"
                       onClick={() => setSelectedCategory(category)}
+                      data-testid={`card-category-${category}`}
                     >
                       <div className="p-4 bg-secondary rounded-[1.5rem] text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                         <Icon className="w-8 h-8" />
@@ -75,31 +135,52 @@ export default function Categories() {
                   );
                 })}
               </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Filters Row */}
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder={t('search_placeholder')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 h-11 rounded-xl bg-card border-border/50 focus-visible:ring-primary/20"
+                      data-testid="input-category-search"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                      <SelectTrigger className="w-full md:w-[180px] h-11 rounded-xl bg-card border-border/50" data-testid="select-sort">
+                        <div className="flex items-center gap-2">
+                          <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+                          <SelectValue placeholder="Saralash" />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="popular">Ommabop</SelectItem>
+                        <SelectItem value="price-asc">Arzonroq</SelectItem>
+                        <SelectItem value="price-desc">Qimmatroq</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Products Grid */}
+                {filteredProducts.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {filteredProducts.map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-20 text-muted-foreground bg-card rounded-[2rem] border border-dashed border-border/50">
+                    Mahsulotlar topilmadi
+                  </div>
+                )}
+              </div>
             )}
 
-            {/* Filtered Products */}
-            {selectedCategory && (
-              <section className="space-y-6">
-                <div className="flex items-center gap-3 border-b border-border/60 pb-3">
-                  <div className="p-2 bg-primary/10 rounded-xl text-primary">
-                    {(() => {
-                      const Icon = categoryIcons[selectedCategory] || Grid;
-                      return <Icon className="w-5 h-5" />;
-                    })()}
-                  </div>
-                  <h2 className="text-2xl font-black capitalize font-display">{selectedCategory}</h2>
-                  <span className="ml-auto text-muted-foreground text-sm font-bold bg-secondary px-3 py-1 rounded-full">
-                    {filteredProducts.length} 
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                  {filteredProducts.map(product => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </section>
-            )}
-            
             {categories.length === 0 && (
                <div className="text-center py-20 text-muted-foreground bg-card rounded-[2rem] border border-dashed">
                  Kategoriyalar topilmadi
