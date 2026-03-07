@@ -144,48 +144,64 @@ export default function Categories() {
             ))}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-12">
             {!selectedCategory ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {categories.map(category => {
-                  const Icon = categoryIcons[category] || Grid;
-                  // Find a sample product image for the category
-                  const sampleProduct = products?.find(p => p.category === category);
-                  return (
-                    <Card 
-                      key={category}
-                      className="group relative aspect-square overflow-hidden rounded-[2rem] border-border/50 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer bg-card"
-                      onClick={() => setSelectedCategory(category)}
-                      data-testid={`card-category-${category}`}
-                    >
-                      {sampleProduct?.imageUrl ? (
-                        <div className="absolute inset-0">
-                          <img 
-                            src={sampleProduct.imageUrl} 
-                            alt={category}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-40"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  {categories.map(category => {
+                    const Icon = categoryIcons[category] || Grid;
+                    const sampleProduct = products?.find(p => p.category === category);
+                    return (
+                      <Card 
+                        key={category}
+                        className="group relative aspect-square overflow-hidden rounded-[2rem] border-border/50 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer bg-card"
+                        onClick={() => setSelectedCategory(category)}
+                        data-testid={`card-category-${category}`}
+                      >
+                        {sampleProduct?.imageUrl ? (
+                          <div className="absolute inset-0">
+                            <img 
+                              src={sampleProduct.imageUrl} 
+                              alt={category}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-40"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          </div>
+                        ) : (
+                          <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center">
+                             <Icon className="w-16 h-16 text-primary/20" />
+                          </div>
+                        )}
+                        
+                        <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
+                          <div className="p-4 bg-white/10 backdrop-blur-md rounded-[1.5rem] text-white mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
+                            <Icon className="w-8 h-8" />
+                          </div>
+                          <span className="font-black text-xl text-white capitalize font-display drop-shadow-md">{category}</span>
+                          <span className="text-white/70 text-sm font-bold mt-1">
+                            {products?.filter(p => p.category === category).length} {t('products_count')}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="absolute inset-0 bg-secondary/50 flex items-center justify-center">
-                           <Icon className="w-16 h-16 text-primary/20" />
-                        </div>
-                      )}
-                      
-                      <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-center">
-                        <div className="p-4 bg-white/10 backdrop-blur-md rounded-[1.5rem] text-white mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-                          <Icon className="w-8 h-8" />
-                        </div>
-                        <span className="font-black text-xl text-white capitalize font-display drop-shadow-md">{category}</span>
-                        <span className="text-white/70 text-sm font-bold mt-1">
-                          {products?.filter(p => p.category === category).length} {t('products_count')}
-                        </span>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {/* All Products Section */}
+                <div className="space-y-6 pt-8 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold font-display">{t('all_products')}</h2>
+                    <span className="text-muted-foreground text-sm font-bold bg-secondary px-3 py-1 rounded-full">
+                      {filteredProducts.length} {t('products_count')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {filteredProducts.map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="space-y-6">
                 {/* Products Grid */}
