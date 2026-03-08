@@ -1,13 +1,13 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
-import { api } from "@shared/routes";
+import { api, buildUrl } from "@shared/routes";
 import { z } from "zod";
 
 async function seedDatabase() {
   const existingProducts = await storage.getProducts();
   if (existingProducts.length === 0) {
-    await storage.createProduct({
+    const p1 = await storage.createProduct({
       titleUz: "Smartfon Samsung Galaxy S23",
       titleRu: "Смартфон Samsung Galaxy S23",
       descriptionUz: "Yangi avlod smartfoni, 128GB xotira",
@@ -19,7 +19,7 @@ async function seedDatabase() {
       category: "Elektronika",
       isPopular: true
     });
-    await storage.createProduct({
+    const p2 = await storage.createProduct({
       titleUz: "Noutbuk Apple MacBook Air M2",
       titleRu: "Ноутбук Apple MacBook Air M2",
       descriptionUz: "Yengil va kuchli noutbuk",
@@ -40,6 +40,26 @@ async function seedDatabase() {
       imageUrl: "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1",
       category: "Maishiy texnika",
       isPopular: false
+    });
+
+    // Seed sample reviews
+    await storage.createReview({
+      productId: p1.id,
+      userName: "Ali",
+      rating: 5,
+      comment: "Juda yaxshi smartfon! Batareya uzoq turadi va kamera sifati a'lo."
+    });
+    await storage.createReview({
+      productId: p1.id,
+      userName: "Fatima",
+      rating: 4,
+      comment: "Yaxshi, lekin biraz qimmat."
+    });
+    await storage.createReview({
+      productId: p2.id,
+      userName: "Karim",
+      rating: 5,
+      comment: "MacBook ajoyib! Tez va ishonchli. Hamma uchun tavsiya qilaman."
     });
   }
 }
@@ -147,6 +167,31 @@ export async function registerRoutes(
   app.delete(api.orders.delete.path, async (req, res) => {
     await storage.deleteOrder(Number(req.params.id));
     res.status(204).send();
+  });
+
+  app.get(api.reviews.list.path, async (req, res) => {
+    const productId = Number(req.params.productId);
+    const reviewsList = await storage.getReviews(productId);
+    res.json(reviewsList);
+  });
+
+  app.post(api.reviews.create.path, async (req, res) => {
+    try {
+      const input = api.reviews.create.input.parse(req.body);
+      const review = await storage.createReview({
+        ...input,
+        productId: Number(req.params.productId),
+      });
+      res.status(201).json(review);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      throw err;
+    }
   });
 
   app.get(api.admin.stats.path, async (req, res) => {

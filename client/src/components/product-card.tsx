@@ -6,6 +6,12 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 
+function renderStars(rating: number) {
+  return Array.from({ length: 5 }).map((_, i) => 
+    i < Math.round(rating) ? '⭐' : '☆'
+  ).join('');
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const { getLocalized, t } = useLanguage();
   const addItem = useCart(state => state.addItem);
@@ -15,6 +21,8 @@ export function ProductCard({ product }: { product: Product }) {
   const priceFormatted = new Intl.NumberFormat('uz-UZ').format(product.price);
   const hasDiscount = product.discountPercent && product.discountPercent > 0 && product.originalPrice;
   const originalPriceFormatted = hasDiscount ? new Intl.NumberFormat('uz-UZ').format(product.originalPrice!) : null;
+  const rating = product.ratingAverage ? parseFloat(product.ratingAverage.toString()) : 0;
+  const ratingCount = product.ratingCount || 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // prevent navigation if wrapped in link
@@ -53,6 +61,11 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="p-4 flex flex-col flex-1">
         <div className="text-xs text-muted-foreground font-medium mb-1 uppercase tracking-wider">{product.category}</div>
         <h3 className="font-semibold text-foreground line-clamp-2 leading-tight flex-1 mb-2 font-display">{title}</h3>
+        
+        <div className="text-sm text-muted-foreground mb-3">
+          {renderStars(rating)} ({ratingCount})
+        </div>
+
         <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col">
             {hasDiscount && (

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertProductSchema, insertOrderSchema, products, orders } from './schema';
+import { insertProductSchema, insertOrderSchema, insertReviewSchema, products, orders, reviews } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -89,6 +89,24 @@ export const api = {
       responses: {
         204: z.void(),
         404: errorSchemas.notFound,
+      },
+    },
+  },
+  reviews: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/products/:productId/reviews' as const,
+      responses: {
+        200: z.array(z.custom<typeof reviews.$inferSelect>()),
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/products/:productId/reviews' as const,
+      input: insertReviewSchema,
+      responses: {
+        201: z.custom<typeof reviews.$inferSelect>(),
+        400: errorSchemas.validation,
       },
     },
   },

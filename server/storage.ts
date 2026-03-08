@@ -1,4 +1,4 @@
-import { products, orders, type Product, type InsertProduct, type Order, type InsertOrder } from "@shared/schema";
+import { products, orders, reviews, type Product, type InsertProduct, type Order, type InsertOrder, type Review, type InsertReview } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -13,6 +13,9 @@ export interface IStorage {
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   deleteOrder(id: number): Promise<void>;
+
+  getReviews(productId: number): Promise<Review[]>;
+  createReview(review: InsertReview): Promise<Review>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -55,6 +58,27 @@ export class DatabaseStorage implements IStorage {
   
   async deleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  async getReviews(productId: number): Promise<Review[]> {
+    return await db.select().from(reviews).where(eq(reviews.productId, productId));
+  }
+
+  async createReview(review: InsertReview): Promise<Review> {
+    const [newReview] = await db.insert(reviews).values(review).returning();
+    
+    // Recalculate product rating
+    const productReviews = await db.select().from(reviews).where(eq(reviews.productId, review.productId));
+    const totalRating = productReviews.reduce((sum, r) => sum + r.rating, 0);
+    const avgRating = totalRating / productReviews.length;
+    
+    // Update product rating
+    await db.update(products).set({
+      ratingAverage: avgRating.toString(),
+      ratingCount: productReviews.length
+    }).where(eq(products.id, review.productId));
+    
+    return newReview;
   }
 }
 
