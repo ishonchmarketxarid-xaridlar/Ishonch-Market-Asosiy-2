@@ -28,6 +28,16 @@ export default function Checkout() {
     return null;
   }
 
+  const generateTelegramMessage = () => {
+    const formatter = new Intl.NumberFormat('uz-UZ');
+    const itemsText = items
+      .map(i => `- ${i.product.titleUz} — ${formatter.format(i.product.price)} UZS x ${i.quantity}`)
+      .join('\n');
+    
+    const tgText = `Siz buyurtma qilgan mahsulotlar:\n${itemsText}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov qabul qilingandan keyin yetkaziladi`;
+    return tgText;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -45,11 +55,8 @@ export default function Checkout() {
       items: orderItems,
     }, {
       onSuccess: () => {
-        // Prepare telegram message
-        const itemsText = items.map(i => `${i.product.titleUz} x ${i.quantity}`).join('\n');
-        const tgText = `Yangi Buyurtma!\nIsm: ${formData.name}\nTel: ${formData.phone}\nManzil: ${formData.address}\n\nMahsulotlar:\n${itemsText}\n\nJami: ${getTotal()} UZS`;
-        
         clearCart();
+        const tgText = generateTelegramMessage();
         window.open(`https://t.me/+998774884846?text=${encodeURIComponent(tgText)}`, '_blank');
         setLocation("/confirmation");
       }

@@ -12,11 +12,14 @@ export default function Cart() {
   const totalFormatted = new Intl.NumberFormat('uz-UZ').format(getTotal());
 
   const handleTelegramConfirm = () => {
-    const orderList = items.map(i => 
-      `- ${getLocalized(i.product, 'title')} x ${i.quantity} = ${i.product.price * i.quantity} UZS`
-    ).join('\n');
+    const formatter = new Intl.NumberFormat('uz-UZ');
+    const orderList = items.map(i => {
+      const title = getLocalized(i.product, 'title');
+      const price = formatter.format(i.product.price);
+      return `- ${title} — ${price} UZS x ${i.quantity}`;
+    }).join('\n');
     
-    const text = `Savatdagi mahsulotlar:\n\n${orderList}\n\nJami: ${getTotal()} UZS\n\nMen ushbu buyurtmani tasdiqlamoqchiman.`;
+    const text = `Siz buyurtma qilgan mahsulotlar:\n${orderList}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov qabul qilingandan keyin yetkaziladi`;
     window.open(`https://t.me/+998774884846?text=${encodeURIComponent(text)}`, '_blank');
   };
 
