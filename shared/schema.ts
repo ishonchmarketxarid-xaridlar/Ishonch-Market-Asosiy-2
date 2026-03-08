@@ -9,6 +9,8 @@ export const products = pgTable("products", {
   descriptionUz: text("description_uz").notNull(),
   descriptionRu: text("description_ru").notNull(),
   price: integer("price").notNull(), // in UZS
+  originalPrice: integer("original_price"), // in UZS - if discounted
+  discountPercent: integer("discount_percent"), // discount percentage (0-100)
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
   isPopular: boolean("is_popular").default(false).notNull(),

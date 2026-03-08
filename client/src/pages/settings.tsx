@@ -1,12 +1,11 @@
 import { useLanguage } from "@/lib/i18n";
-import { useAdminStats } from "@/hooks/use-admin";
+import { useOrders } from "@/hooks/use-orders";
+import { useCart } from "@/hooks/use-cart";
 import { Layout } from "@/components/layout";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Globe, BarChart3, TrendingUp, Package, ShoppingBag, ShieldAlert } from "lucide-react";
+import { Globe, TrendingUp, ShoppingBag, ShieldAlert, Clock, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import {
   Dialog,
@@ -21,11 +20,51 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
   const { lang, setLang, t } = useLanguage();
-  const { data: stats, isLoading } = useAdminStats();
+  const { data: orders, isLoading } = useOrders();
+  const { items: cartItems } = useCart();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [password, setPassword] = useState("");
+
+  const userStats = useMemo(() => {
+    if (!orders) return null;
+    
+    const totalOrders = orders.length;
+    const activeOrders = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
+    const deliveredOrders = orders.filter(o => o.status === 'delivered');
+    const totalSpent = deliveredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+    
+    let lastOrderText = "—";
+    if (orders.length > 0) {
+      const sortedOrders = [...orders].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      const lastOrder = sortedOrders[0];
+      const daysAgo = Math.floor(
+        (Date.now() - new Date(lastOrder.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      if (daysAgo === 0) {
+        const hoursAgo = Math.floor(
+          (Date.now() - new Date(lastOrder.createdAt).getTime()) / (1000 * 60 * 60)
+        );
+        lastOrderText = hoursAgo === 0 ? "Hozir" : `${hoursAgo} soat oldin`;
+      } else if (daysAgo === 1) {
+        lastOrderText = "Kecha";
+      } else {
+        lastOrderText = `${daysAgo} kun oldin`;
+      }
+    }
+    
+    return {
+      totalOrders,
+      activeOrders,
+      cartItemsCount: cartItems.length,
+      totalSpent,
+      lastOrderText
+    };
+  }, [orders, cartItems]);
 
   const handleAdminAccess = () => {
     if (password === "9billionaire$$$$$") {
@@ -76,40 +115,56 @@ export default function Settings() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Skeleton className="h-24 rounded-2xl w-full" />
-              <Skeleton className="h-24 rounded-2xl w-full" />
-              <Skeleton className="h-24 rounded-2xl w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <Skeleton key={i} className="h-24 rounded-2xl w-full" />
+              ))}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          ) : userStats ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <ShoppingBag className="w-4 h-4" />
                   <span className="text-sm font-medium">Jami buyurtmalar</span>
                 </div>
-                <div className="text-2xl font-black text-foreground">{stats?.totalOrders || 0}</div>
+                <div className="text-2xl font-black text-foreground">{userStats.totalOrders}</div>
               </Card>
               
               <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Package className="w-4 h-4" />
-                  <span className="text-sm font-medium">Jami mahsulotlar</span>
+                  <Zap className="w-4 h-4" />
+                  <span className="text-sm font-medium">Faol buyurtmalar</span>
                 </div>
-                <div className="text-2xl font-black text-foreground">{stats?.totalProducts || 0}</div>
+                <div className="text-2xl font-black text-foreground">{userStats.activeOrders}</div>
+              </Card>
+
+              <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <ShoppingBag className="w-4 h-4" />
+                  <span className="text-sm font-medium">Savatchada</span>
+                </div>
+                <div className="text-2xl font-black text-foreground">{userStats.cartItemsCount}</div>
               </Card>
 
               <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <TrendingUp className="w-4 h-4" />
-                  <span className="text-sm font-medium">Jami tushum</span>
+                  <span className="text-sm font-medium">Jami sarflangan</span>
                 </div>
-                <div className="text-xl font-black text-primary truncate">
-                  {new Intl.NumberFormat('uz-UZ').format(stats?.totalRevenue || 0)} UZS
+                <div className="text-lg font-black text-primary truncate">
+                  {new Intl.NumberFormat('uz-UZ').format(userStats.totalSpent)} UZS
                 </div>
               </Card>
+
+              <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card md:col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-medium">Oxirgi buyurtma</span>
+                </div>
+                <div className="text-lg font-black text-foreground">{userStats.lastOrderText}</div>
+              </Card>
             </div>
-          )}
+          ) : null}
         </section>
 
         <section className="pt-6 border-t border-border">

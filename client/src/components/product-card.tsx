@@ -13,6 +13,8 @@ export function ProductCard({ product }: { product: Product }) {
 
   const title = getLocalized(product, 'title');
   const priceFormatted = new Intl.NumberFormat('uz-UZ').format(product.price);
+  const hasDiscount = product.discountPercent && product.discountPercent > 0 && product.originalPrice;
+  const originalPriceFormatted = hasDiscount ? new Intl.NumberFormat('uz-UZ').format(product.originalPrice!) : null;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // prevent navigation if wrapped in link
@@ -42,12 +44,22 @@ export function ProductCard({ product }: { product: Product }) {
             HOT
           </div>
         )}
+        {hasDiscount && (
+          <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm z-10">
+            -{product.discountPercent}%
+          </div>
+        )}
       </div>
       <div className="p-4 flex flex-col flex-1">
         <div className="text-xs text-muted-foreground font-medium mb-1 uppercase tracking-wider">{product.category}</div>
         <h3 className="font-semibold text-foreground line-clamp-2 leading-tight flex-1 mb-2 font-display">{title}</h3>
         <div className="flex items-center justify-between mt-auto">
-          <span className="font-bold text-lg text-primary">{priceFormatted} <span className="text-sm font-normal text-muted-foreground">{t('uzs')}</span></span>
+          <div className="flex flex-col">
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">{originalPriceFormatted} UZS</span>
+            )}
+            <span className="font-bold text-lg text-primary">{priceFormatted} <span className="text-sm font-normal text-muted-foreground">{t('uzs')}</span></span>
+          </div>
           <Button 
             size="icon" 
             variant="secondary" 

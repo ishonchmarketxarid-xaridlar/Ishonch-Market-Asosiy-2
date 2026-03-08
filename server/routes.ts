@@ -13,6 +13,8 @@ async function seedDatabase() {
       descriptionUz: "Yangi avlod smartfoni, 128GB xotira",
       descriptionRu: "Смартфон нового поколения, память 128ГБ",
       price: 10500000,
+      originalPrice: 15000000,
+      discountPercent: 30,
       imageUrl: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c",
       category: "Elektronika",
       isPopular: true
@@ -23,6 +25,8 @@ async function seedDatabase() {
       descriptionUz: "Yengil va kuchli noutbuk",
       descriptionRu: "Легкий и мощный ноутбук",
       price: 15200000,
+      originalPrice: 19000000,
+      discountPercent: 20,
       imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
       category: "Kompyuterlar",
       isPopular: true
