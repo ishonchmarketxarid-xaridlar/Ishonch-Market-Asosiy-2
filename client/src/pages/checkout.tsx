@@ -34,7 +34,7 @@ export default function Checkout() {
       .map(i => `- ${i.product.titleUz} — ${formatter.format(i.product.price)} UZS x ${i.quantity}`)
       .join('\n');
     
-    const tgText = `Siz buyurtma qilgan mahsulotlar:\n${itemsText}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov qabul qilingandan keyin yetkaziladi`;
+    const tgText = `Siz buyurtma qilgan mahsulotlar:\n${itemsText}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov buyurtma qabul qilingandan keyin beriladi`;
     return tgText;
   };
 
