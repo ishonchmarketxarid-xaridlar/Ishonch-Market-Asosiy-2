@@ -14,6 +14,9 @@ export const products = pgTable("products", {
   imageUrl: text("image_url").notNull(),
   category: text("category").notNull(),
   isPopular: boolean("is_popular").default(false).notNull(),
+  isHot: boolean("is_hot").default(false).notNull(),
+  isNew: boolean("is_new").default(false).notNull(),
+  isSale: boolean("is_sale").default(false).notNull(),
   ratingAverage: decimal("rating_average", { precision: 3, scale: 2 }).default("0"),
   ratingCount: integer("rating_count").default(0).notNull(),
 });
@@ -38,7 +41,10 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({ id: true, ratingAverage: true, ratingCount: true });
+export const insertProductSchema = createInsertSchema(products).omit({ id: true, ratingAverage: true, ratingCount: true }).extend({
+  originalPrice: z.number().int().optional(),
+  discountPercent: z.number().int().min(0).max(100).optional(),
+});
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true, status: true });
 

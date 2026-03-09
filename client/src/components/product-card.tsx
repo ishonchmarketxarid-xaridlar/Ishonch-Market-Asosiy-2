@@ -47,14 +47,14 @@ export function ProductCard({ product }: { product: Product }) {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        {product.isPopular && (
-          <div className="absolute top-2 right-2 bg-destructive text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm z-10">
-            HOT
-          </div>
-        )}
-        {hasDiscount && (
+        <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
+          {product.isPopular && <div className="bg-destructive text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">HOT</div>}
+          {product.isNew && <div className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">NEW</div>}
+          {product.isHot && <div className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">🔥</div>}
+        </div>
+        {(product.isSale || hasDiscount) && (
           <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm z-10">
-            -{product.discountPercent}%
+            {hasDiscount ? `-${product.discountPercent}%` : 'SALE'}
           </div>
         )}
       </div>

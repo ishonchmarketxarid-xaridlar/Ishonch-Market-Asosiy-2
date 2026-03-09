@@ -28,7 +28,8 @@ export default function Admin() {
 
   const [productForm, setProductForm] = useState({
     titleUz: '', titleRu: '', descriptionUz: '', descriptionRu: '', 
-    price: 0, imageUrl: '', category: '', isPopular: false
+    price: 0, originalPrice: undefined, discountPercent: undefined,
+    imageUrl: '', category: '', isPopular: false, isHot: false, isNew: false, isSale: false
   });
 
   const openEditModal = (p: Product) => {
@@ -39,7 +40,7 @@ export default function Admin() {
 
   const openCreateModal = () => {
     setEditingProduct(null);
-    setProductForm({ titleUz: '', titleRu: '', descriptionUz: '', descriptionRu: '', price: 0, imageUrl: '', category: '', isPopular: false });
+    setProductForm({ titleUz: '', titleRu: '', descriptionUz: '', descriptionRu: '', price: 0, originalPrice: undefined, discountPercent: undefined, imageUrl: '', category: '', isPopular: false, isHot: false, isNew: false, isSale: false });
     setIsProductModalOpen(true);
   };
 
@@ -105,6 +106,14 @@ export default function Admin() {
                         <Input type="number" required value={productForm.price} onChange={e => setProductForm({...productForm, price: parseInt(e.target.value) || 0})} />
                       </div>
                       <div className="space-y-2">
+                        <Label>Asl Narxi (UZS)</Label>
+                        <Input type="number" placeholder="Chegirma uchun" value={productForm.originalPrice || ''} onChange={e => setProductForm({...productForm, originalPrice: e.target.value ? parseInt(e.target.value) : undefined})} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Chegirma %</Label>
+                        <Input type="number" min="0" max="100" placeholder="0-100" value={productForm.discountPercent || ''} onChange={e => setProductForm({...productForm, discountPercent: e.target.value ? parseInt(e.target.value) : undefined})} />
+                      </div>
+                      <div className="space-y-2">
                         <Label>Kategoriya</Label>
                         <Input required value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} />
                       </div>
@@ -112,9 +121,24 @@ export default function Admin() {
                         <Label>Rasm URL</Label>
                         <Input required value={productForm.imageUrl} onChange={e => setProductForm({...productForm, imageUrl: e.target.value})} placeholder="https://..." />
                       </div>
-                      <div className="col-span-2 flex items-center justify-between bg-secondary/50 p-4 rounded-xl border border-border">
-                        <Label className="text-base cursor-pointer">Mashhur mahsulot (Bosh sahifada ko'rinadi)</Label>
-                        <Switch checked={productForm.isPopular} onCheckedChange={c => setProductForm({...productForm, isPopular: c})} />
+                      
+                      <div className="col-span-2 space-y-3 bg-secondary/50 p-4 rounded-xl border border-border">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base cursor-pointer">Mashhur (HOT)</Label>
+                          <Switch checked={productForm.isPopular} onCheckedChange={c => setProductForm({...productForm, isPopular: c})} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base cursor-pointer">Yangi (NEW)</Label>
+                          <Switch checked={productForm.isNew} onCheckedChange={c => setProductForm({...productForm, isNew: c})} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base cursor-pointer">Chegirma (SALE)</Label>
+                          <Switch checked={productForm.isSale} onCheckedChange={c => setProductForm({...productForm, isSale: c})} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-base cursor-pointer">Qiziq (HOT - eski label)</Label>
+                          <Switch checked={productForm.isHot} onCheckedChange={c => setProductForm({...productForm, isHot: c})} />
+                        </div>
                       </div>
                     </div>
                     <Button type="submit" className="w-full h-12 mt-4" disabled={createProduct.isPending || updateProduct.isPending}>
@@ -139,11 +163,31 @@ export default function Admin() {
                   <tbody className="divide-y divide-border">
                     {products?.map(p => (
                       <tr key={p.id} className="hover:bg-secondary/20 transition-colors">
-                        <td className="px-6 py-4 font-medium flex items-center gap-3">
+                        <td className="px-6 py-4 font-medium flex items-center gap-2">
                           <img src={p.imageUrl} className="w-10 h-10 rounded object-cover" alt="" />
-                          {p.titleUz} {p.isPopular && <span className="text-[10px] bg-destructive text-white px-2 py-0.5 rounded-full ml-2">HOT</span>}
+                          <div className="flex flex-col gap-1">
+                            {p.titleUz}
+                            <div className="flex gap-1">
+                              {p.isPopular && <span className="text-[10px] bg-destructive text-white px-2 py-0.5 rounded-full">HOT</span>}
+                              {p.isNew && <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full">NEW</span>}
+                              {p.isSale && <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">SALE</span>}
+                              {p.isHot && <span className="text-[10px] bg-green-500 text-white px-2 py-0.5 rounded-full">HOT!</span>}
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4">{new Intl.NumberFormat().format(p.price)} UZS</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            {p.discountPercent && p.originalPrice ? (
+                              <>
+                                <span className="line-through text-muted-foreground text-xs">{new Intl.NumberFormat().format(p.originalPrice)}</span>
+                                <span className="font-bold">{new Intl.NumberFormat().format(p.price)}</span>
+                              </>
+                            ) : (
+                              <span>{new Intl.NumberFormat().format(p.price)}</span>
+                            )}
+                            {p.ratingCount > 0 && <span className="text-xs text-muted-foreground">⭐ {parseFloat(p.ratingAverage?.toString() || '0').toFixed(1)} ({p.ratingCount})</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 capitalize">{p.category}</td>
                         <td className="px-6 py-4 text-right space-x-2">
                           <Button variant="outline" size="icon" onClick={() => openEditModal(p)}><Edit className="w-4 h-4 text-blue-500" /></Button>
