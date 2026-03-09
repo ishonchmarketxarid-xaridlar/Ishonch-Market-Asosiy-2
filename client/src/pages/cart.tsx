@@ -19,7 +19,7 @@ export default function Cart() {
       return `- ${title} — ${price} UZS x ${i.quantity}`;
     }).join('\n');
     
-    const text = `Siz buyurtma qilgan mahsulotlar:\n${orderList}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov qabul qilingandan keyin yetkaziladi`;
+    const text = `Siz buyurtma qilgan mahsulotlar:\n${orderList}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov buyurtma qabul qilingandan keyin beriladi`;
     window.open(`https://t.me/+998774884846?text=${encodeURIComponent(text)}`, '_blank');
   };
 
