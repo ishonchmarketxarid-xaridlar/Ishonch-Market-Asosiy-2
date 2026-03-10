@@ -9,11 +9,13 @@ export interface IStorage {
   updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number): Promise<void>;
   
-  getOrders(): Promise<Order[]>;
+  getOrders(userId?: number): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   deleteOrder(id: number): Promise<void>;
 
+  getWishlist(userId?: number): Promise<Wishlist[]>;
+  toggleWishlist(userId: number | undefined, productId: number): Promise<{ action: 'added' | 'removed' }>;
   getReviews(productId: number): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
 }
@@ -42,7 +44,10 @@ export class DatabaseStorage implements IStorage {
     await db.delete(products).where(eq(products.id, id));
   }
   
-  async getOrders(): Promise<Order[]> {
+  async getOrders(userId?: number): Promise<Order[]> {
+    if (userId) {
+      return await db.select().from(orders).where(eq(orders.userId, userId));
+    }
     return await db.select().from(orders);
   }
   
@@ -58,6 +63,28 @@ export class DatabaseStorage implements IStorage {
   
   async deleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  async getWishlist(userId?: number): Promise<Wishlist[]> {
+    if (userId) {
+      return await db.select().from(wishlist).where(eq(wishlist.userId, userId));
+    }
+    return await db.select().from(wishlist);
+  }
+
+  async toggleWishlist(userId: number | undefined, productId: number): Promise<{ action: 'added' | 'removed' }> {
+    const existing = await db.select().from(wishlist).where(
+      eq(wishlist.productId, productId)
+      // and eq(wishlist.userId, userId) - add when auth is ready
+    );
+
+    if (existing.length > 0) {
+      await db.delete(wishlist).where(eq(wishlist.productId, productId));
+      return { action: 'removed' };
+    } else {
+      await db.insert(wishlist).values({ userId, productId });
+      return { action: 'added' };
+    }
   }
 
   async getReviews(productId: number): Promise<Review[]> {

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Grid, ShoppingCart, ShieldCheck, Settings } from "lucide-react";
+import { Home, Grid, ShoppingCart, ShieldCheck, Settings, Heart } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 import { useCart } from "@/hooks/use-cart";
 
@@ -11,6 +11,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: "/", icon: Home, label: t('home') },
     { href: "/categories", icon: Grid, label: t('categories') },
+    { href: "/wishlist", icon: Heart, label: t('wishlist') },
     { href: "/cart", icon: ShoppingCart, label: t('cart'), badge: cartItemsCount > 0 ? cartItemsCount : undefined },
     { href: "/settings", icon: Settings, label: t('settings') },
   ];

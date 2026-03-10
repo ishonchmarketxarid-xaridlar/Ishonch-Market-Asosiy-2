@@ -2,9 +2,10 @@ import { Link } from "wouter";
 import { Product } from "@shared/schema";
 import { useLanguage } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Heart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import { useWishlist, useToggleWishlist } from "@/hooks/use-wishlist";
 
 function renderStars(rating: number) {
   return Array.from({ length: 5 }).map((_, i) => 
@@ -16,6 +17,10 @@ export function ProductCard({ product }: { product: Product }) {
   const { getLocalized, t } = useLanguage();
   const addItem = useCart(state => state.addItem);
   const { toast } = useToast();
+  const { data: wishlistItems } = useWishlist();
+  const toggleWishlist = useToggleWishlist();
+
+  const isFavorite = wishlistItems?.some(item => item.productId === product.id);
 
   const title = getLocalized(product, 'title');
   const priceFormatted = new Intl.NumberFormat('uz-UZ').format(product.price);
@@ -35,6 +40,12 @@ export function ProductCard({ product }: { product: Product }) {
     });
   };
 
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist.mutate(product.id);
+  };
+
   return (
     <Link 
       href={`/product/${product.id}`}
@@ -48,12 +59,20 @@ export function ProductCard({ product }: { product: Product }) {
           loading="lazy"
         />
         <div className="absolute top-2 right-2 flex flex-col gap-1 z-10">
-          {product.isPopular && <div className="bg-destructive text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">HOT</div>}
-          {product.isNew && <div className="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">NEW</div>}
-          {product.isHot && <div className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">🔥</div>}
+          <Button
+            size="icon"
+            variant="secondary"
+            className={`rounded-full h-8 w-8 shadow-sm transition-colors ${isFavorite ? 'text-destructive bg-destructive/10' : 'text-muted-foreground'}`}
+            onClick={handleToggleWishlist}
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+          </Button>
+          {product.isPopular && <div className="bg-destructive text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">HOT</div>}
+          {product.isNew && <div className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">NEW</div>}
+          {product.isHot && <div className="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">🔥</div>}
         </div>
         {(product.isSale || hasDiscount) && (
-          <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm z-10">
+          <div className="absolute top-2 left-2 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10">
             {hasDiscount ? `-${product.discountPercent}%` : 'SALE'}
           </div>
         )}

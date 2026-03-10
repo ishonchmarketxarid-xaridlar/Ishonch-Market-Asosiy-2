@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { useProducts } from "@/hooks/use-products";
 
 export default function Settings() {
   const { lang, setLang, t } = useLanguage();
@@ -26,6 +26,8 @@ export default function Settings() {
   const { toast } = useToast();
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [password, setPassword] = useState("");
+
+  const { data: products } = useProducts();
 
   const userStats = useMemo(() => {
     if (!orders) return null;
@@ -165,6 +167,57 @@ export default function Settings() {
               </Card>
             </div>
           ) : null}
+        </section>
+
+        <section className="pt-6 border-t border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingBag className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold font-display">{t('my_orders')}</h2>
+          </div>
+
+          <div className="space-y-4">
+            {isLoading ? (
+              <Skeleton className="h-32 rounded-2xl w-full" />
+            ) : orders && orders.length > 0 ? (
+              [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
+                <Card key={order.id} className="p-4 rounded-2xl border-border/50 bg-card">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-lg">#{order.id}</span>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      order.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' :
+                      order.status === 'cancelled' ? 'bg-destructive/10 text-destructive' :
+                      'bg-primary/10 text-primary'
+                    }`}>
+                      {order.status === 'pending' ? 'Kutilmoqda' : 
+                       order.status === 'confirmed' ? 'Tasdiqlandi' :
+                       order.status === 'shipping' ? 'Yetkazilmoqda' :
+                       order.status === 'delivered' ? 'Yetkazildi' : 'Bekor qilindi'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-3">
+                    {((order.items as any) || []).map((item: any, i: number) => {
+                      const product = products?.find(p => p.id === item.productId);
+                      const title = product ? getLocalized(product, 'title') : `Mahsulot #${item.productId}`;
+                      return (
+                        <div key={i} className="flex justify-between">
+                          <span>{title} x {item.quantity}</span>
+                          <span>{new Intl.NumberFormat('uz-UZ').format(item.price * item.quantity)} UZS</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between items-center border-t border-border/50 pt-2">
+                    <span className="text-sm font-medium">Jami:</span>
+                    <span className="font-black text-primary">{new Intl.NumberFormat('uz-UZ').format(order.totalAmount)} UZS</span>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-10 text-muted-foreground bg-card rounded-2xl border border-dashed">
+                Hozircha buyurtmalar yo'q
+              </div>
+            )}
+          </div>
         </section>
 
         <section className="pt-6 border-t border-border">

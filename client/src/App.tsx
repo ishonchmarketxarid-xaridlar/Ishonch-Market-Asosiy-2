@@ -14,6 +14,7 @@ import Checkout from "@/pages/checkout";
 import Confirmation from "@/pages/confirmation";
 import Admin from "@/pages/admin";
 import Settings from "@/pages/settings";
+import Wishlist from "@/pages/wishlist";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/confirmation" component={Confirmation} />
       <Route path="/admin" component={Admin} />
       <Route path="/settings" component={Settings} />
+      <Route path="/wishlist" component={Wishlist} />
       <Route component={NotFound} />
     </Switch>
   );

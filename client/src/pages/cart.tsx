@@ -101,7 +101,7 @@ export default function Cart() {
             </div>
             
             <div className="text-center text-sm font-medium text-emerald-600 bg-emerald-50 py-2 rounded-xl mb-4">
-              ✨ {t('cash_on_delivery')}
+              ✨ {t('payment_notice') || "To'lov buyurtma qabul qilingandan keyin qilinadi"}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">

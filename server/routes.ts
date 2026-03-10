@@ -129,6 +129,23 @@ export async function registerRoutes(
     res.json(ordersList);
   });
 
+  app.get('/api/user/orders', async (req, res) => {
+    // Mock user for now
+    const ordersList = await storage.getOrders();
+    res.json(ordersList);
+  });
+
+  app.get('/api/wishlist', async (req, res) => {
+    const items = await storage.getWishlist();
+    res.json(items);
+  });
+
+  app.post('/api/wishlist/toggle', async (req, res) => {
+    const { productId } = req.body;
+    const result = await storage.toggleWishlist(undefined, productId);
+    res.json(result);
+  });
+
   app.post(api.orders.create.path, async (req, res) => {
     try {
       const input = api.orders.create.input.parse(req.body);

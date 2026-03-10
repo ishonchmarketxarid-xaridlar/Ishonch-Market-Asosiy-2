@@ -239,7 +239,9 @@ export default function Admin() {
                        <SelectContent>
                          <SelectItem value="pending">Kutilmoqda</SelectItem>
                          <SelectItem value="confirmed">Tasdiqlandi</SelectItem>
+                         <SelectItem value="shipping">Yetkazilmoqda</SelectItem>
                          <SelectItem value="delivered">Yetkazildi</SelectItem>
+                         <SelectItem value="cancelled">Bekor qilindi</SelectItem>
                        </SelectContent>
                      </Select>
                      

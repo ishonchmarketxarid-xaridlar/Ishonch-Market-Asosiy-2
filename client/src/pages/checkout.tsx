@@ -34,7 +34,7 @@ export default function Checkout() {
       .map(i => `- ${i.product.titleUz} — ${formatter.format(i.product.price)} UZS x ${i.quantity}`)
       .join('\n');
     
-    const tgText = `Siz buyurtma qilgan mahsulotlar:\n${itemsText}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov qabul qilingandan keyin yetkaziladi`;
+    const tgText = `Siz buyurtma qilgan mahsulotlar:\n${itemsText}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov buyurtma qabul qilingandan keyin qilinadi`;
     return tgText;
   };
 
@@ -114,6 +114,10 @@ export default function Checkout() {
             <div className="bg-secondary/50 p-4 rounded-2xl flex justify-between items-center mt-8">
               <span className="font-medium text-muted-foreground">{t('total')}:</span>
               <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('uz-UZ').format(getTotal())} UZS</span>
+            </div>
+
+            <div className="text-center text-sm font-medium text-emerald-600 bg-emerald-50 py-3 rounded-2xl mb-6 border border-emerald-100">
+              ✨ {t('payment_notice') || "To'lov buyurtma qabul qilingandan keyin qilinadi"}
             </div>
 
             <Button 

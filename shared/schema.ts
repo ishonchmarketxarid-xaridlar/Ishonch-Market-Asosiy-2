@@ -32,14 +32,25 @@ export const reviews = pgTable("reviews", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id"), // Optional if no auth system yet
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
   customerAddress: text("customer_address").notNull(),
   items: jsonb("items").notNull(), // Array of { productId, quantity, price }
   totalAmount: integer("total_amount").notNull(),
-  status: text("status").notNull().default('pending'), // pending, confirmed, delivered
+  status: text("status").notNull().default('pending'), // pending, confirmed, shipping, delivered, cancelled
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const wishlist = pgTable("wishlist", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id"),
+  productId: integer("product_id").notNull(),
+});
+
+export const insertWishlistSchema = createInsertSchema(wishlist).omit({ id: true });
+export type Wishlist = typeof wishlist.$inferSelect;
+export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
 
 export const insertProductSchema = createInsertSchema(products).omit({ id: true, ratingAverage: true, ratingCount: true }).extend({
   originalPrice: z.number().int().optional(),
