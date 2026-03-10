@@ -18,13 +18,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProducts } from "@/hooks/use-products";
 import { useToast } from "@/hooks/use-toast";
+
 import { useWishlist } from "@/hooks/use-wishlist";
+
+
+// Используем только currentUser.id
+const { data: wishlistItems, isLoading: wishlistLoading, toggleWishlist } = useWishlist(currentUser.id);
+
+const handleToggleFavorite = (productId: number) => {
+  toggleWishlist({ userId: currentUser.id, productId });
+};
+
 
 export default function Settings() {
   const { lang, setLang, t, getLocalized } = useLanguage();
-  const { data: orders, isLoading: ordersLoading } = useOrders(1); // mock userId 1
+  const currentUser = useCurrentUser(); // должен вернуть { id: number, name: string }
+  const { data: orders, isLoading: ordersLoading } = useOrders(currentUser?.id || 0);
+  // <-- const currentUser = useCurrentUser(); // <-- добавить этот хук, который вернет id текущего пользователя
+  // <-- const { data: orders, isLoading: ordersLoading } = useOrders(currentUser.id);
+  // <-- const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist(currentUser.id);
+  // <-- const { data: orders, isLoading: ordersLoading } = useOrders(1); // mock userId 1
   const { items: cartItems } = useCart();
-  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist(1); // mock userId 1
+  // <-- const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist(1); // mock userId 1 
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showAdminModal, setShowAdminModal] = useState(false);
