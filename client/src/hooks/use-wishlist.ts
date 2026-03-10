@@ -2,11 +2,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
 
-export function useWishlist() {
+export function useWishlist(userId?: number) {
   return useQuery({
-    queryKey: ['/api/wishlist'],
+    queryKey: ['/api/wishlist', userId],
     queryFn: async () => {
-      const res = await fetch('/api/wishlist', { credentials: "include" });
+      const url = userId ? `/api/wishlist/${userId}` : '/api/wishlist';
+      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch wishlist");
       return res.json();
     },
@@ -18,20 +19,20 @@ export function useToggleWishlist() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (productId: number) => {
-      const res = await fetch(`/api/wishlist/toggle`, {
+    mutationFn: async ({ productId, userId, action }: { productId: number; userId?: number; action: 'add' | 'remove' }) => {
+      const res = await fetch(`/api/wishlist/${action}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ productId, userId }),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to toggle wishlist");
+      if (!res.ok) throw new Error(`Failed to ${action} wishlist`);
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/wishlist'] });
       toast({ 
-        title: data.action === 'added' ? "Sevimlilarga qo'shildi" : "Sevimlilardan o'chirildi",
+        title: data.action === 'added' ? "Sevimlilarga qo'shildi" : "Sevimlildan o'chirildi",
         duration: 2000
       });
     },

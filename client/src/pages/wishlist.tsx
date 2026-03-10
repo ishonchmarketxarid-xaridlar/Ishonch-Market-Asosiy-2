@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Wishlist() {
   const { t } = useLanguage();
-  const { data: wishlistItems, isLoading: wishlistLoading, isError: wishlistError } = useWishlist();
+  const { data: wishlistItems, isLoading: wishlistLoading, isError: wishlistError } = useWishlist(1); // Using mock userId 1
   const { data: products, isLoading: productsLoading, isError: productsError } = useProducts();
 
   const favoriteProducts = products?.filter(p => 

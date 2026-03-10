@@ -5,22 +5,48 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Minus, Send, ShoppingBag } from "lucide-react";
 
+import { useOrders, useCreateOrder } from "@/hooks/use-orders";
+import { useLocation } from "wouter";
+
 export default function Cart() {
-  const { items, updateQuantity, removeItem, getTotal } = useCart();
+  const { items, updateQuantity, removeItem, getTotal, clearCart } = useCart();
   const { t, getLocalized } = useLanguage();
-
   const totalFormatted = new Intl.NumberFormat('uz-UZ').format(getTotal());
+  const createOrder = useCreateOrder();
+  const [, setLocation] = useLocation();
 
-  const handleTelegramConfirm = () => {
+  const handleTelegramConfirm = async () => {
     const formatter = new Intl.NumberFormat('uz-UZ');
-    const orderList = items.map(i => {
-      const title = getLocalized(i.product, 'title');
-      const price = formatter.format(i.product.price);
-      return `- ${title} — ${price} UZS x ${i.quantity}`;
-    }).join('\n');
-    
-    const text = `Siz buyurtma qilgan mahsulotlar:\n${orderList}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov buyurtma qabul qilingandan keyin qilinadi`;
-    window.open(`https://t.me/+998774884846?text=${encodeURIComponent(text)}`, '_blank');
+    const orderItems = items.map(i => ({
+      productId: i.product.id,
+      quantity: i.quantity,
+      price: i.product.price
+    }));
+
+    try {
+      await createOrder.mutateAsync({
+        customerName: "Telegram User",
+        customerPhone: "N/A",
+        customerAddress: "Telegram Order",
+        totalAmount: getTotal(),
+        items: orderItems,
+        userId: 1 // mock
+      });
+
+      const orderList = items.map(i => {
+        const title = getLocalized(i.product, 'title');
+        const price = formatter.format(i.product.price);
+        return `- ${title} — ${price} UZS x ${i.quantity}`;
+      }).join('\n');
+      
+      const text = `Siz buyurtma qilgan mahsulotlar:\n${orderList}\n\nJami: ${formatter.format(getTotal())} UZS\n✨ To'lov buyurtma qabul qilingandan keyin qilinadi`;
+      window.open(`https://t.me/+998774884846?text=${encodeURIComponent(text)}`, '_blank');
+      
+      clearCart();
+      setLocation("/settings");
+    } catch (error) {
+      console.error("Failed to save order", error);
+    }
   };
 
   if (items.length === 0) {

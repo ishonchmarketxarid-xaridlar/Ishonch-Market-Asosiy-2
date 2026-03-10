@@ -129,21 +129,26 @@ export async function registerRoutes(
     res.json(ordersList);
   });
 
-  app.get('/api/user/orders', async (req, res) => {
-    // Mock user for now
-    const ordersList = await storage.getOrders();
+  app.get('/api/user/orders/:userId', async (req, res) => {
+    const ordersList = await storage.getOrders(Number(req.params.userId));
     res.json(ordersList);
   });
 
-  app.get('/api/wishlist', async (req, res) => {
-    const items = await storage.getWishlist();
+  app.get('/api/wishlist/:userId', async (req, res) => {
+    const items = await storage.getWishlist(Number(req.params.userId));
     res.json(items);
   });
 
-  app.post('/api/wishlist/toggle', async (req, res) => {
-    const { productId } = req.body;
-    const result = await storage.toggleWishlist(undefined, productId);
-    res.json(result);
+  app.post('/api/wishlist/add', async (req, res) => {
+    const { userId, productId } = req.body;
+    await storage.toggleWishlist(userId, productId);
+    res.json({ success: true, action: 'added' });
+  });
+
+  app.post('/api/wishlist/remove', async (req, res) => {
+    const { userId, productId } = req.body;
+    await storage.toggleWishlist(userId, productId);
+    res.json({ success: true, action: 'removed' });
   });
 
   app.post(api.orders.create.path, async (req, res) => {

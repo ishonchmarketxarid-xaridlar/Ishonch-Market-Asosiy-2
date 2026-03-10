@@ -43,7 +43,11 @@ export function ProductCard({ product }: { product: Product }) {
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleWishlist.mutate(product.id);
+    toggleWishlist.mutate({ 
+      productId: product.id, 
+      userId: 1, // mock user
+      action: isFavorite ? 'remove' : 'add' 
+    });
   };
 
   return (

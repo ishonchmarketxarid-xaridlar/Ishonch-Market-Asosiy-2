@@ -22,9 +22,9 @@ import { useWishlist } from "@/hooks/use-wishlist";
 
 export default function Settings() {
   const { lang, setLang, t, getLocalized } = useLanguage();
-  const { data: orders, isLoading: ordersLoading } = useOrders();
+  const { data: orders, isLoading: ordersLoading } = useOrders(1); // mock userId 1
   const { items: cartItems } = useCart();
-  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist();
+  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist(1); // mock userId 1
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showAdminModal, setShowAdminModal] = useState(false);

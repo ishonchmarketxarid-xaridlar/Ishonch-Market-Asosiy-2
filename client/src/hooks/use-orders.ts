@@ -1,15 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/i18n";
 import type { CreateOrderRequest } from "@shared/schema";
 
-export function useOrders() {
+export function useOrders(userId?: number) {
+  const { getLocalized } = useLanguage();
   return useQuery({
-    queryKey: [api.orders.list.path],
+    queryKey: [userId ? `/api/user/orders/${userId}` : api.orders.list.path],
     queryFn: async () => {
-      const res = await fetch(api.orders.list.path, { credentials: "include" });
+      const url = userId ? `/api/user/orders/${userId}` : api.orders.list.path;
+      const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch orders");
-      return api.orders.list.responses[200].parse(await res.json());
+      return res.json();
     },
   });
 }

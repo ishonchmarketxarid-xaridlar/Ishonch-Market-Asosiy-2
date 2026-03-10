@@ -49,20 +49,23 @@ export default function Checkout() {
       price: i.product.price
     }));
 
-    createOrder.mutate({
-      customerName: formData.name,
-      customerPhone: formData.phone,
-      customerAddress: formData.address,
-      totalAmount: getTotal(),
-      items: orderItems,
-    }, {
-      onSuccess: () => {
-        clearCart();
-        const tgText = generateTelegramMessage();
-        window.open(`https://t.me/+998774884846?text=${encodeURIComponent(tgText)}`, '_blank');
-        setLocation("/confirmation");
-      }
-    });
+    try {
+      await createOrder.mutateAsync({
+        customerName: formData.name,
+        customerPhone: formData.phone,
+        customerAddress: formData.address,
+        totalAmount: getTotal(),
+        items: orderItems,
+        userId: 1 // mock
+      });
+
+      clearCart();
+      const tgText = generateTelegramMessage();
+      window.open(`https://t.me/+998774884846?text=${encodeURIComponent(tgText)}`, '_blank');
+      setLocation("/confirmation");
+    } catch (error) {
+      console.error("Failed to save order", error);
+    }
   };
 
   return (
