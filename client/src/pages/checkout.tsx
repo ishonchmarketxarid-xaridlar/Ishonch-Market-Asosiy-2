@@ -40,7 +40,7 @@ export default function Checkout() {
     return tgText;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const orderItems = items.map(i => ({
