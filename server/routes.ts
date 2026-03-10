@@ -69,25 +69,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
-  // Получить избранное пользователя
-app.get('/api/wishlist/:userId', async (req, res) => {
-  const items = await storage.getWishlist(Number(req.params.userId));
-  res.json(items);
-});
 
-// Добавить в избранное
-app.post('/api/wishlist/add', async (req, res) => {
-  const { userId, productId } = req.body;
-  await storage.toggleWishlist(userId, productId);
-  res.json({ success: true, action: 'added' });
-});
-
-// Удалить из избранного
-app.post('/api/wishlist/remove', async (req, res) => {
-  const { userId, productId } = req.body;
-  await storage.toggleWishlist(userId, productId);
-  res.json({ success: true, action: 'removed' });
-});
   // Seed initial data
   seedDatabase().catch(console.error);
 
