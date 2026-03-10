@@ -3,7 +3,7 @@ import { useOrders } from "@/hooks/use-orders";
 import { useCart } from "@/hooks/use-cart";
 import { Layout } from "@/components/layout";
 import { Card } from "@/components/ui/card";
-import { Globe, TrendingUp, ShoppingBag, ShieldAlert, Clock, Zap } from "lucide-react";
+import { Globe, TrendingUp, ShoppingBag, ShieldAlert, Clock, Zap, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
@@ -17,23 +17,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useProducts } from "@/hooks/use-products";
+import { useToast } from "@/hooks/use-toast";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 export default function Settings() {
-  const { lang, setLang, t } = useLanguage();
-  const { data: orders, isLoading } = useOrders();
+  const { lang, setLang, t, getLocalized } = useLanguage();
+  const { data: orders, isLoading: ordersLoading } = useOrders();
   const { items: cartItems } = useCart();
+  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [password, setPassword] = useState("");
 
-  const { data: products } = useProducts();
+  const { data: products, isLoading: productsLoading } = useProducts();
+
+  const isLoading = ordersLoading || productsLoading || wishlistLoading;
 
   const userStats = useMemo(() => {
     if (!orders) return null;
     
     const totalOrders = orders.length;
-    const activeOrders = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
+    const activeOrders = orders.filter(o => o.status === 'pending' || o.status === 'confirmed' || o.status === 'shipping').length;
     const deliveredOrders = orders.filter(o => o.status === 'delivered');
     const totalSpent = deliveredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
     
@@ -63,10 +68,11 @@ export default function Settings() {
       totalOrders,
       activeOrders,
       cartItemsCount: cartItems.length,
+      wishlistCount: wishlistItems?.length || 0,
       totalSpent,
       lastOrderText
     };
-  }, [orders, cartItems]);
+  }, [orders, cartItems, wishlistItems]);
 
   const handleAdminAccess = () => {
     if (password === "9billionaire$$$$$") {
@@ -83,7 +89,7 @@ export default function Settings() {
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-8 animate-in fade-in">
+      <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-8 animate-in fade-in pb-24">
         <h1 className="text-3xl font-black font-display text-primary">Ishonch Market</h1>
         
         <section>
@@ -118,7 +124,7 @@ export default function Settings() {
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4, 5, 6].map(i => (
                 <Skeleton key={i} className="h-24 rounded-2xl w-full" />
               ))}
             </div>
@@ -150,6 +156,14 @@ export default function Settings() {
 
               <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm font-medium">Sevimlilar</span>
+                </div>
+                <div className="text-2xl font-black text-foreground">{userStats.wishlistCount}</div>
+              </Card>
+
+              <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <TrendingUp className="w-4 h-4" />
                   <span className="text-sm font-medium">Jami sarflangan</span>
                 </div>
@@ -158,7 +172,7 @@ export default function Settings() {
                 </div>
               </Card>
 
-              <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card md:col-span-2 lg:col-span-1">
+              <Card className="p-4 rounded-2xl border-border/50 shadow-sm flex flex-col justify-center bg-card">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <Clock className="w-4 h-4" />
                   <span className="text-sm font-medium">Oxirgi buyurtma</span>
@@ -183,10 +197,12 @@ export default function Settings() {
                 <Card key={order.id} className="p-4 rounded-2xl border-border/50 bg-card">
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-bold text-lg">#{order.id}</span>
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                       order.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' :
                       order.status === 'cancelled' ? 'bg-destructive/10 text-destructive' :
-                      'bg-primary/10 text-primary'
+                      order.status === 'shipping' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'confirmed' ? 'bg-purple-100 text-purple-700' :
+                      'bg-orange-100 text-orange-700'
                     }`}>
                       {order.status === 'pending' ? 'Kutilmoqda' : 
                        order.status === 'confirmed' ? 'Tasdiqlandi' :
@@ -194,14 +210,14 @@ export default function Settings() {
                        order.status === 'delivered' ? 'Yetkazildi' : 'Bekor qilindi'}
                     </span>
                   </div>
-                  <div className="text-sm text-muted-foreground mb-3">
+                  <div className="text-sm text-muted-foreground mb-3 space-y-1">
                     {((order.items as any) || []).map((item: any, i: number) => {
                       const product = products?.find(p => p.id === item.productId);
                       const title = product ? getLocalized(product, 'title') : `Mahsulot #${item.productId}`;
                       return (
-                        <div key={i} className="flex justify-between">
-                          <span>{title} x {item.quantity}</span>
-                          <span>{new Intl.NumberFormat('uz-UZ').format(item.price * item.quantity)} UZS</span>
+                        <div key={i} className="flex justify-between items-center text-xs">
+                          <span className="truncate flex-1 mr-2">{title} x {item.quantity}</span>
+                          <span className="shrink-0 font-medium">{new Intl.NumberFormat('uz-UZ').format(item.price * item.quantity)} UZS</span>
                         </div>
                       );
                     })}
@@ -213,7 +229,7 @@ export default function Settings() {
                 </Card>
               ))
             ) : (
-              <div className="text-center py-10 text-muted-foreground bg-card rounded-2xl border border-dashed">
+              <div className="text-center py-10 text-muted-foreground bg-card rounded-2xl border border-dashed border-border/50">
                 Hozircha buyurtmalar yo'q
               </div>
             )}

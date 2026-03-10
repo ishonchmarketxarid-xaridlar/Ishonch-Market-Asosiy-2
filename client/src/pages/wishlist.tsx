@@ -8,18 +8,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Wishlist() {
   const { t } = useLanguage();
-  const { data: wishlistItems, isLoading: wishlistLoading } = useWishlist();
-  const { data: products, isLoading: productsLoading } = useProducts();
+  const { data: wishlistItems, isLoading: wishlistLoading, isError: wishlistError } = useWishlist();
+  const { data: products, isLoading: productsLoading, isError: productsError } = useProducts();
 
   const favoriteProducts = products?.filter(p => 
     wishlistItems?.some(item => item.productId === p.id)
   ) || [];
 
   const isLoading = wishlistLoading || productsLoading;
+  const isError = wishlistError || productsError;
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in">
+      <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in pb-24">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-destructive/10 rounded-2xl text-destructive">
             <Heart className="w-6 h-6 fill-current" />
@@ -32,6 +33,11 @@ export default function Wishlist() {
             {[1, 2, 3, 4].map(i => (
               <Skeleton key={i} className="h-64 rounded-2xl w-full" />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="text-center py-20 text-muted-foreground bg-card rounded-[2rem] border border-dashed border-destructive/20">
+            <p className="text-lg font-medium text-destructive">Xatolik yuz berdi</p>
+            <p className="text-sm">Ma'lumotlarni yuklashda xatolik yuz berdi. Iltimos sahifani yangilang.</p>
           </div>
         ) : favoriteProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
