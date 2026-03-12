@@ -12,9 +12,14 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const userId = localStorage.getItem("userId");
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-id": userId || ""
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
