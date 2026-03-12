@@ -34,8 +34,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const userId = localStorage.getItem("userId");
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
+      headers: {
+        "x-user-id": userId || ""
+      }
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
