@@ -157,14 +157,15 @@ export async function registerRoutes(
   try {
     const input = api.orders.create.input.parse(req.body);
 
+    const { userId } = req.body;
+
     const order = await storage.createOrder({
       ...input,
-      userId: 1
+      userId
     });
 
     res.status(201).json(order);
-      res.status(201).json(order);
-    } catch (err) {
+  } catch (err) {
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
