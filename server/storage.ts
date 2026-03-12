@@ -72,21 +72,23 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(wishlist);
   }
 
-  async toggleWishlist(userId: number | undefined, productId: number): Promise<{ action: 'added' | 'removed' }> {
-    const existing = await db.select().from(wishlist).where(
-      eq(wishlist.productId, productId)
-      // and eq(wishlist.userId, userId) - add when auth is ready
+  async toggleWishlist(userId: number, productId: number): Promise<{ action: 'added' | 'removed' }> {
+  const existing = await db.select().from(wishlist).where(
+    eq(wishlist.productId, productId),
+    eq(wishlist.userId, userId)
+  );
+
+  if (existing.length > 0) {
+    await db.delete(wishlist).where(
+      eq(wishlist.productId, productId),
+      eq(wishlist.userId, userId)
     );
-
-    if (existing.length > 0) {
-      await db.delete(wishlist).where(eq(wishlist.productId, productId));
-      return { action: 'removed' };
-    } else {
-      await db.insert(wishlist).values({ userId, productId });
-      return { action: 'added' };
-    }
+    return { action: 'removed' };
+  } else {
+    await db.insert(wishlist).values({ userId, productId });
+    return { action: 'added' };
   }
-
+}
   async getReviews(productId: number): Promise<Review[]> {
     return await db.select().from(reviews).where(eq(reviews.productId, productId));
   }
