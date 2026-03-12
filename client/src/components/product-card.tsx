@@ -41,14 +41,23 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist.mutate({ 
+  e.preventDefault();
+  e.stopPropagation();
+
+  toggleWishlist.mutate(
+    { 
       productId: product.id, 
-      userId: 1, // mock user
+      userId: 1, // пока mock, потом через авторизацию
       action: isFavorite ? 'remove' : 'add' 
-    });
-  };
+    },
+    {
+      onSuccess: () => {
+        // обновляем локальное состояние сразу после успешной мутации
+        setIsFavorite(prev => !prev);
+      }
+    }
+  );
+};
 
   return (
     <Link 
