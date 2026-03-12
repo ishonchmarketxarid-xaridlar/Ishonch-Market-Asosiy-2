@@ -6,6 +6,7 @@ import { ShoppingCart, Heart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { useWishlist, useToggleWishlist } from "@/hooks/use-wishlist";
+import { useState, useEffect } from "react";
 
 function renderStars(rating: number) {
   return Array.from({ length: 5 }).map((_, i) => 
@@ -20,8 +21,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { data: wishlistItems } = useWishlist();
   const toggleWishlist = useToggleWishlist();
 
-  const isFavorite = wishlistItems?.some(item => item.productId === product.id);
-
+  
   const title = getLocalized(product, 'title');
   const priceFormatted = new Intl.NumberFormat('uz-UZ').format(product.price);
   const hasDiscount = product.discountPercent && product.discountPercent > 0 && product.originalPrice;
@@ -40,29 +40,39 @@ export function ProductCard({ product }: { product: Product }) {
     });
   };
 
-  const handleToggleWishlist = (e: React.MouseEvent) => {
+  
+
+
+const [isFavorite, setIsFavorite] = useState(
+  wishlistItems?.some(item => item.productId === product.id) || false
+);
+
+
+useEffect(() => {
+  setIsFavorite(wishlistItems?.some(item => item.productId === product.id) || false);
+}, [wishlistItems]);
+
+const handleToggleWishlist = (e: React.MouseEvent) => {
   e.preventDefault();
   e.stopPropagation();
 
-  // Берём userId из props или контекста авторизации
-  const userId = currentUserId; // <-- должно приходить от logged-in пользователя
+  const userId = currentUserId; // реальный userId
 
   toggleWishlist.mutate(
     {     
       productId: product.id,     
-      userId,   // используем реальный userId
+      userId,     
       action: isFavorite ? 'remove' : 'add'     
     },
     {    
       onSuccess: () => {    
-        setIsFavorite(prev => !prev);    
+        setIsFavorite(prev => !prev); // ✅ теперь обновляет локально
       }    
     }
   );
 };
-  
-  
 
+  
   return (
     <Link 
       href={`/product/${product.id}`}
