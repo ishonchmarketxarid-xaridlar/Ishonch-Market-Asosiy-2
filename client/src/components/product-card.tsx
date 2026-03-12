@@ -44,20 +44,24 @@ export function ProductCard({ product }: { product: Product }) {
   e.preventDefault();
   e.stopPropagation();
 
+  // Берём userId из props или контекста авторизации
+  const userId = currentUserId; // <-- должно приходить от logged-in пользователя
+
   toggleWishlist.mutate(
-    { 
-      productId: product.id, 
-      userId: 1, // пока mock, потом через авторизацию
-      action: isFavorite ? 'remove' : 'add' 
+    {     
+      productId: product.id,     
+      userId,   // используем реальный userId
+      action: isFavorite ? 'remove' : 'add'     
     },
-    {
-      onSuccess: () => {
-        // обновляем локальное состояние сразу после успешной мутации
-        setIsFavorite(prev => !prev);
-      }
+    {    
+      onSuccess: () => {    
+        setIsFavorite(prev => !prev);    
+      }    
     }
   );
 };
+  
+  
 
   return (
     <Link 
