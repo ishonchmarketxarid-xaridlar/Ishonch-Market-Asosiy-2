@@ -73,7 +73,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async toggleWishlist(userId: number, productId: number): Promise<{ action: 'added' | 'removed' }> {
- 
   const existing = await db.select().from(wishlist)
     .where(eq(wishlist.productId, productId), eq(wishlist.userId, userId));
 
