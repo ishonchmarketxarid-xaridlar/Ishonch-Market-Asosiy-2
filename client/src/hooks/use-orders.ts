@@ -1,21 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/lib/i18n";
 import type { CreateOrderRequest } from "@shared/schema";
 
-export function useOrders(userId?: number) {
-  const { getLocalized } = useLanguage();
+export function useOrders() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) throw new Error("User not identified");
+
   return useQuery({
-    queryKey: [userId ? `/api/user/orders/${userId}` : api.orders.list.path],
+    queryKey: [/api/user/orders/${userId}],
     queryFn: async () => {
-      const url = userId ? `/api/user/orders/${userId}` : api.orders.list.path;
-      const userId = localStorage.getItem("userId");
-      const res = await fetch(url, {
+      const res = await fetch(/api/user/orders/${userId}, {
         credentials: "include",
-        headers: {
-          "x-user-id": userId || ""
-        }
+        headers: { "x-user-id": userId }
       });
       if (!res.ok) throw new Error("Failed to fetch orders");
       return res.json();
@@ -25,15 +22,17 @@ export function useOrders(userId?: number) {
 
 export function useCreateOrder() {
   const queryClient = useQueryClient();
-  
+  const userId = localStorage.getItem("userId");
+  if (!userId) throw new Error("User not identified");
+
   return useMutation({
     mutationFn: async (data: CreateOrderRequest) => {
       const res = await fetch(api.orders.create.path, {
         method: api.orders.create.method,
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": localStorage.getItem("userId") || ""
-      },
+          "x-user-id": userId
+        },
         body: JSON.stringify(data),
         credentials: "include",
       });
@@ -41,7 +40,7 @@ export function useCreateOrder() {
       return api.orders.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
     },
   });
 }
@@ -49,7 +48,9 @@ export function useCreateOrder() {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+  const userId = localStorage.getItem("userId");
+  if (!userId) throw new Error("User not identified");
+
   return useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
       const url = buildUrl(api.orders.updateStatus.path, { id });
@@ -63,7 +64,7 @@ export function useUpdateOrderStatus() {
       return api.orders.updateStatus.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
       toast({ title: "Status yangilandi" });
     },
   });
@@ -72,7 +73,9 @@ export function useUpdateOrderStatus() {
 export function useDeleteOrder() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+  const userId = localStorage.getItem("userId");
+  if (!userId) throw new Error("User not identified");
+
   return useMutation({
     mutationFn: async (id: number) => {
       const url = buildUrl(api.orders.delete.path, { id });
@@ -83,7 +86,7 @@ export function useDeleteOrder() {
       if (!res.ok) throw new Error("Failed to delete order");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
       toast({ title: "Buyurtma o'chirildi" });
     },
   });
