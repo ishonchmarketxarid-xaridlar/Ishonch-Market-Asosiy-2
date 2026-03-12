@@ -10,7 +10,7 @@ export function useOrders() {
   return useQuery({
     queryKey: [`/api/user/orders/${userId}`],
     queryFn: async () => {
-      const res = await fetch(`/api/user/orders/${userId},` { // ← обратные кавычки ``
+      const res = await fetch(`/api/user/orders/${userId}`, { 
   credentials: "include",
   headers: { "x-user-id": userId },
 });
