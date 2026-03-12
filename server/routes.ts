@@ -87,20 +87,30 @@ export async function registerRoutes(
   });
 
   app.post(api.products.create.path, async (req, res) => {
-    try {
-      const input = api.products.create.input.parse(req.body);
-      const product = await storage.createProduct(input);
-      res.status(201).json(product);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({
-          message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
-        });
-      }
-      throw err;
+  try {
+    // Парсим входящие данные через Zod
+    const input = api.products.create.input.parse(req.body);
+
+    // Создаём продукт
+    const product = await storage.createProduct(input);
+
+    // Отправляем успешный ответ
+    res.status(201).json(product);
+
+  } catch (err) {
+    // Если ошибка Zod — возвращаем подробное сообщение
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({
+        message: err.errors[0].message,
+        field: err.errors[0].path.join('.'),
+      });
     }
-  });
+
+    // Любая другая ошибка
+    console.error(err);
+    res.status(500).json({ message: "Server error while creating product" });
+  }
+});
 
   app.put(api.products.update.path, async (req, res) => {
     try {
@@ -156,14 +166,17 @@ export async function registerRoutes(
   app.post(api.orders.create.path, async (req, res) => {
   try {
     const input = api.orders.create.input.parse(req.body);
+    
+    const userIdHeader = req.headers["x-user-id"];
 
-    const { userId } = req.body;
-
+    if (!userIdHeader) {
+      return res.status(400).json({ message: "User not identified" });
+    }
+    const userId = Number(userIdHeader);
     const order = await storage.createOrder({
-      ...input,
-      userId
-    });
-
+  ...input,
+  userId
+});
     res.status(201).json(order);
   } catch (err) {
       if (err instanceof z.ZodError) {
