@@ -65,7 +65,7 @@ export function useUpdateOrderStatus() {
       return api.orders.updateStatus.responses[200].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
+      queryClient.invalidateQueries({ queryKey: [`/api/user/orders/${userId}`] });
       toast({ title: "Status yangilandi" });
     },
   });
@@ -87,7 +87,7 @@ export function useDeleteOrder() {
       if (!res.ok) throw new Error("Failed to delete order");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
+      queryClient.invalidateQueries({ queryKey: [`/api/user/orders/${userId}`] });
       toast({ title: "Buyurtma o'chirildi" });
     },
   });
