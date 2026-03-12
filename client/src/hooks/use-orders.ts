@@ -30,8 +30,8 @@ export function useCreateOrder() {
     mutationFn: async (data: CreateOrderRequest) => {
       const res = await fetch(api.orders.create.path, {
         method: api.orders.create.method,
-        headers: {"
-          Content-Type": "application/json",
+        headers: {
+          "Content-Type": "application/json",
           "x-user-id": localStorage.getItem("userId") || ""
       },
         body: JSON.stringify(data),
