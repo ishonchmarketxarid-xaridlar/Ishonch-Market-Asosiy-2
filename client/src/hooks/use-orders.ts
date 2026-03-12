@@ -8,9 +8,9 @@ export function useOrders() {
   if (!userId) throw new Error("User not identified");
 
   return useQuery({
-    queryKey: ['/api/user/orders/${userId}'],
+    queryKey: [`/api/user/orders/${userId}`],
     queryFn: async () => {
-      const res = await fetch(/api/user/orders/${userId}, { // ← обратные кавычки ``
+      const res = await fetch(`/api/user/orders/${userId},` { // ← обратные кавычки ``
   credentials: "include",
   headers: { "x-user-id": userId },
 });
