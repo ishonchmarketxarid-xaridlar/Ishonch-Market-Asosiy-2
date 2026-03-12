@@ -10,7 +10,13 @@ export function useOrders(userId?: number) {
     queryKey: [userId ? `/api/user/orders/${userId}` : api.orders.list.path],
     queryFn: async () => {
       const url = userId ? `/api/user/orders/${userId}` : api.orders.list.path;
-      const res = await fetch(url, { credentials: "include" });
+      const userId = localStorage.getItem("userId");
+      const res = await fetch(url, {
+        credentials: "include",
+        headers: {
+          "x-user-id": userId || ""
+        }
+      });
       if (!res.ok) throw new Error("Failed to fetch orders");
       return res.json();
     },
@@ -24,7 +30,10 @@ export function useCreateOrder() {
     mutationFn: async (data: CreateOrderRequest) => {
       const res = await fetch(api.orders.create.path, {
         method: api.orders.create.method,
-        headers: { "Content-Type": "application/json" },
+        headers: {"
+          Content-Type": "application/json",
+          "x-user-id": localStorage.getItem("userId") || ""
+      },
         body: JSON.stringify(data),
         credentials: "include",
       });
