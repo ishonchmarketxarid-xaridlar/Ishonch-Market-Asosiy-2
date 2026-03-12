@@ -152,16 +152,38 @@ export async function registerRoutes(
   });
 
   app.post('/api/wishlist/add', async (req, res) => {
-    const { userId, productId } = req.body;
-    await storage.toggleWishlist(userId, productId);
-    res.json({ success: true, action: 'added' });
-  });
+  try {
+    const productId = Number(req.body.productId);
 
-  app.post('/api/wishlist/remove', async (req, res) => {
-    const { userId, productId } = req.body;
-    await storage.toggleWishlist(userId, productId);
-    res.json({ success: true, action: 'removed' });
-  });
+    // безопасный userId с header
+    const userIdHeader = req.headers["x-user-id"];
+    if (!userIdHeader) return res.status(400).json({ message: "User not identified" });
+
+    const userId = Number(userIdHeader);
+
+    const result = await storage.toggleWishlist(userId, productId);
+    res.json({ success: true, action: result.action });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post('/api/wishlist/remove', async (req, res) => {
+  try {
+    const productId = Number(req.body.productId);
+    const userIdHeader = req.headers["x-user-id"];
+    if (!userIdHeader) return res.status(400).json({ message: "User not identified" });
+
+    const userId = Number(userIdHeader);
+
+    const result = await storage.toggleWishlist(userId, productId);
+    res.json({ success: true, action: result.action });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
   app.post(api.orders.create.path, async (req, res) => {
   try {
