@@ -41,7 +41,7 @@ export function useCreateOrder() {
       return api.orders.create.responses[201].parse(await res.json());
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [/api/user/orders/${userId}] });
+      queryClient.invalidateQueries({ queryKey: [`/api/user/orders/${userId}`] });
     },
   });
 }
