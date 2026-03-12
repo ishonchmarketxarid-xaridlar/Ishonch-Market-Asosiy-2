@@ -12,7 +12,7 @@ export function useOrders() {
     queryFn: async () => {
       const res = await fetch(/api/user/orders/${userId}, {
         credentials: "include",
-        headers: { "x-user-id": userId }
+        headers: { "x-user-id": userId },
       });
       if (!res.ok) throw new Error("Failed to fetch orders");
       return res.json();
@@ -31,7 +31,7 @@ export function useCreateOrder() {
         method: api.orders.create.method,
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": userId
+          "x-user-id": userId,
         },
         body: JSON.stringify(data),
         credentials: "include",
